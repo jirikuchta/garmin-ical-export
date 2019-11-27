@@ -1,68 +1,101 @@
 #!/usr/bin/env python3
 
 import vobject
-import garmin_api
 from datetime import datetime, timedelta, tzinfo
 from typing import Optional
 
-try:
-    from functools import cached_property  # noqa
-except ImportError:
-    class cached_property:  # noqa
-        def __init__(self, func):
-            self.func = func
-
-        def __get__(self, instance, type=None):
-            if instance is None:
-                return self
-            res = instance.__dict__[self.func.__name__] = self.func(instance)
-            return res
+import format_utils
+import garmin_api
 
 
 class Activity:
 
     def __init__(self, data: garmin_api.ActivityData):
         self._data = data
+        self._tzinfo = get_tzinfo_from_garmin_id(self._data["timeZoneId"])
+        self._user_settings = garmin_api.user_settings()
 
     @property
-    def uid(self) -> str:
-        return (
-            f"garmin-activity-"
-            f"{self._data['ownerId']}-{self._data['activityId']}")
-
-    @cached_property
-    def summary(self):
+    def name(self) -> str:
         return str(self._data.get("activityName", "Other"))
 
-    @cached_property
-    def start_time(self) -> datetime:
-        start_time = datetime.fromisoformat(self._data["startTimeLocal"])
-        timezone = get_tzinfo_from_garmin_id(self._data["timeZoneId"])
-        if timezone:
-            start_time = start_time.replace(tzinfo=timezone)
-        return start_time
+    @property
+    def duration(self) -> str:
+        duration = self._data.get("duration")
+
+        if duration is None:
+            return "---"
+
+        return format_utils.time(duration)
 
     @property
-    def end_time(self) -> datetime:
-        duration = 0
-        if self._data["duration"] is not None:
-            duration = round(self._data["duration"])
-        return self.start_time + timedelta(seconds=duration)
+    def distance(self) -> str:
+        distance = self._data.get("distance")
+
+        if distance is None:
+            return "---"
+
+        if use_metric_system():
+            return format_utils.distance_kilometers(distance)
+        else:
+            return format_utils.distance_miles(distance)
+
+    @property
+    def average_speed(self) -> str:
+        speed = self._data.get("averageSpeed")
+
+        if speed is None:
+            return "---"
+
+        if use_metric_system():
+            return format_utils.speed_kmph(speed)
+        else:
+            return format_utils.speed_mph(speed)
 
     @property
     def detail_link(self) -> str:
         return f"{garmin_api.WEB_BASE_URI}/activity/{self._data['activityId']}"
 
-    def to_vevent(self):
-        event = vobject.newFromBehavior("vevent")
+    @property
+    def vevent_uid(self) -> str:
+        return (
+            f"garmin-activity-"
+            f"{self._data['ownerId']}-{self._data['activityId']}")
 
-        event.add("uid").value = self.uid
-        event.add("summary").value = self.summary
-        event.add("dtstart").value = self.start_time
-        event.add("dtend").value = self.end_time
-        event.add("attach").value = self.detail_link
+    @property
+    def vevent_summary(self) -> str:
+        return f"{self.name} ({self.distance}, {self.average_speed})"
 
-        return event
+    @property
+    def vevent_dtstart(self) -> datetime:
+        start_time = datetime.fromisoformat(self._data["startTimeLocal"])
+        if self._tzinfo:
+            start_time = start_time.replace(tzinfo=self._tzinfo)
+        return start_time
+
+    @property
+    def vevent_dtend(self) -> datetime:
+        duration = 0
+        if self._data["duration"] is not None:
+            duration = round(self._data["duration"])
+        return self.vevent_dtstart + timedelta(seconds=duration)
+
+
+class SwimmingActivity(Activity):
+
+    @property
+    def distance(self) -> str:
+        d = self._data.get("distance")
+        return "---" if d is None else format_utils.distance_metres(d)
+
+    @property
+    def average_speed(self):
+        speed = self._data.get("averageSpeed")
+
+        if speed is None:
+            return "---"
+
+        return format_utils.speed_minutes_per_100_metres(speed)
 
 
 def get_activity(data: garmin_api.ActivityData) -> Activity:
@@ -73,3 +106,8 @@ def get_tzinfo_from_garmin_id(id: int) -> Optional[tzinfo]:
     timezones = garmin_api.timezones()
     match = next(filter(lambda tz: tz["unitId"] == id, timezones), None)
     return vobject.icalendar.getTzid(match["timeZone"]) if match else None
+
+
+def use_metric_system() -> bool:
+    return garmin_api.user_settings()["measurementSystem"] == \
+        garmin_api.MeasurementSystem.METRIC.value

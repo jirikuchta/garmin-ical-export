@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
+import enum
 import functools
 import requests
-
 from collections import namedtuple
 from mypy_extensions import TypedDict
 from typing import List, Optional
@@ -26,9 +26,10 @@ class ActivityData(TypedDict):
     activityId: int
     activityName: Optional[str]
     activityType: ActivityTypeData
+    averageSpeed: Optional[float]  # m/s
     description: Optional[str]
-    distance: Optional[float]
-    duration: Optional[float]
+    distance: Optional[float]  # metres
+    duration: Optional[float]  # seconds
     ownerId: int
     startTimeLocal: str
     timeZoneId: int
@@ -37,6 +38,16 @@ class ActivityData(TypedDict):
 class TimezoneData(TypedDict):
     unitId: int
     timeZone: str
+
+
+class MeasurementSystem(enum.Enum):
+    METRIC = "metric"
+    STATUTE_US = "statute_us"
+    STATUTE_UK = "statute_uk"
+
+
+class UserSettings(TypedDict):
+    measurementSystem: str
 
 
 def with_login(func):
@@ -52,8 +63,8 @@ def with_login(func):
 
 @with_login
 def activites(limit: int = 10000, login_session=None) -> List[ActivityData]:
-    PATH = "/proxy/activitylist-service/activities/search/activities"
-    res = login_session.get(f"{WEB_BASE_URI}{PATH}?limit={limit}")
+    path = "/proxy/activitylist-service/activities/search/activities"
+    res = login_session.get(f"{WEB_BASE_URI}{path}?limit={limit}")
     res.raise_for_status()
     return res.json()
 
@@ -73,3 +84,12 @@ def timezones(login_session=None) -> List[TimezoneData]:
     res = login_session.get(uri)
     res.raise_for_status()
     return res.json()
+
+
+@functools.lru_cache()
+@with_login
+def user_settings(login_session=None) -> UserSettings:
+    uri = f"{WEB_BASE_URI}/proxy/userprofile-service/userprofile/user-settings"
+    res = login_session.get(uri)
+    res.raise_for_status()
+    return res.json()["userData"]

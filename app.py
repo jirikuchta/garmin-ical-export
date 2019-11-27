@@ -3,6 +3,7 @@
 import argparse
 import garmin_api
 import vobject
+
 from activity import get_activity
 
 
@@ -34,7 +35,16 @@ def main(args):
 
     cal = vobject.iCalendar()
     for activity_data in activities_data:
-        cal.add(get_activity(activity_data).to_vevent())
+        activity = get_activity(activity_data)
+        event = vobject.newFromBehavior("vevent")
+
+        event.add("uid").value = activity.vevent_uid
+        event.add("summary").value = activity.vevent_summary
+        event.add("dtstart").value = activity.vevent_dtstart
+        event.add("dtend").value = activity.vevent_dtend
+        event.add("description").value = activity.detail_link
+
+        cal.add(event)
 
     if args.target_file:
         with open(args.target_file, "w+") as file:
