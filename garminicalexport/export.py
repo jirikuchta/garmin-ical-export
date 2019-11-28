@@ -16,10 +16,10 @@ def export(email: str, password: str, limit: int,
         activity = activities.get_activity(activity_data)
         event = vobject.newFromBehavior("vevent")
 
-        event.add("uid").value = activity.vevent_uid
-        event.add("summary").value = activity.vevent_summary
-        event.add("dtstart").value = activity.vevent_dtstart
-        event.add("dtend").value = activity.vevent_dtend
+        event.add("uid").value = activity.ical_uid
+        event.add("summary").value = activity.ical_summary
+        event.add("dtstart").value = activity.ical_dtstart
+        event.add("dtend").value = activity.ical_dtend
         event.add("description").value = activity.detail_link
 
         cal.add(event)

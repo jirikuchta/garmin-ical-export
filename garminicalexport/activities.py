@@ -57,28 +57,28 @@ class Activity:
         return f"{garmin_api.WEB_BASE_URI}/activity/{self._data['activityId']}"
 
     @property
-    def vevent_uid(self) -> str:
+    def ical_uid(self) -> str:
         return (
             f"garmin-activity-"
             f"{self._data['ownerId']}-{self._data['activityId']}")
 
     @property
-    def vevent_summary(self) -> str:
+    def ical_summary(self) -> str:
         return f"{self.name} ({self.distance}, {self.duration})"
 
     @property
-    def vevent_dtstart(self) -> datetime:
+    def ical_dtstart(self) -> datetime:
         start_time = datetime.fromisoformat(self._data["startTimeLocal"])
         if self._tzinfo:
             start_time = start_time.replace(tzinfo=self._tzinfo)
         return start_time
 
     @property
-    def vevent_dtend(self) -> datetime:
+    def ical_dtend(self) -> datetime:
         duration = 0
         if self._data["duration"] is not None:
             duration = round(self._data["duration"])
-        return self.vevent_dtstart + timedelta(seconds=duration)
+        return self.ical_dtstart + timedelta(seconds=duration)
 
 
 class RunningActivity(Activity):
@@ -96,14 +96,14 @@ class RunningActivity(Activity):
             return format_utils.speed_minutes_per_mile(speed)
 
     @property
-    def vevent_summary(self):
+    def ical_summary(self):
         return f"{self.name} ({self.distance}, {self.average_speed})"
 
 
 class CyclingActivity(Activity):
 
     @property
-    def vevent_summary(self):
+    def ical_summary(self):
         return f"{self.name} ({self.distance}, {self.average_speed})"
 
 
@@ -124,21 +124,21 @@ class SwimmingActivity(Activity):
         return format_utils.speed_minutes_per_100_metres(speed)
 
     @property
-    def vevent_summary(self):
+    def ical_summary(self):
         return f"{self.name} ({self.distance}, {self.average_speed})"
 
 
 class MultisportActivity(Activity):
 
     @property
-    def vevent_summary(self):
+    def ical_summary(self):
         return f"{self.name} ({self.duration}, {self.distance})"
 
 
 class FitnessActivity(Activity):
 
     @property
-    def vevent_summary(self):
+    def ical_summary(self):
         return f"{self.name} ({self.duration})"
 
 
