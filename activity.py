@@ -14,7 +14,6 @@ class Activity:
         self._data = data
         self._tzinfo = get_tzinfo_from_garmin_id(self._data["timeZoneId"])
         self._user_settings = garmin_api.user_settings()
-        get_base_activity_type(self._data["activityType"])
 
     @property
     def name(self) -> str:
@@ -144,7 +143,8 @@ class FitnessActivity(Activity):
 
 
 def get_activity(data: garmin_api.ActivityData) -> Activity:
-    activity_name = get_base_activity_type(data["activityType"])
+    base_activity_type = get_base_activity_type(data["activityType"])
+    activity_name = base_activity_type["typeKey"]
 
     if activity_name == garmin_api.BaseActivities.RUNNING.value:
         return RunningActivity(data)
@@ -164,12 +164,14 @@ def get_activity(data: garmin_api.ActivityData) -> Activity:
     return Activity(data)
 
 
-def get_base_activity_type(activity_type: garmin_api.ActivityTypeData) -> str:
+def get_base_activity_type(
+        activity_type: garmin_api.ActivityTypeData
+) -> garmin_api.ActivityTypeData:
     types = garmin_api.activity_types()
     while activity_type["parentTypeId"] != garmin_api.ROOT_ACTIVITY_TYPE_ID:
         activity_type = next(filter(
             lambda t: t["typeId"] == activity_type["parentTypeId"], types))
-    return activity_type["typeKey"]
+    return activity_type
 
 
 def get_tzinfo_from_garmin_id(id: int) -> Optional[tzinfo]:

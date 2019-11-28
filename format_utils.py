@@ -35,3 +35,8 @@ def speed_minutes_per_100_metres(meters_per_second: float) -> str:
 def speed_minutes_per_kilometer(meters_per_second: float) -> str:
     minutes, seconds = divmod(1000 / meters_per_second, 60)
     return f"{int(minutes)}:{round(seconds):02} min/km"
+
+
+def speed_minutes_per_mile(meters_per_second: float) -> str:
+    minutes, seconds = divmod((1000 / 0.62137) / meters_per_second, 60)
+    return f"{int(minutes)}:{round(seconds):02} min/mi"

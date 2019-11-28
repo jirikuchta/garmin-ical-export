@@ -11,11 +11,11 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Exports Garmin Connect activities to ICAL format.")
     parser.add_argument(
-        "login_email",
+        "email",
         metavar="login_email",
         help="your Garmin Connect login e-mail")
     parser.add_argument(
-        "login_password",
+        "password",
         metavar="login_password",
         help="your Garmin Connect password")
     parser.add_argument(
