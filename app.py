@@ -11,13 +11,19 @@ def parse_arguments():
     parser = argparse.ArgumentParser(
         description="Exports Garmin Connect activities to ICAL format.")
     parser.add_argument(
-        "--email",
-        required=True,
+        "login_email",
+        metavar="login_email",
         help="your Garmin Connect login e-mail")
     parser.add_argument(
-        "--password",
-        required=True,
+        "login_password",
+        metavar="login_password",
         help="your Garmin Connect password")
+    parser.add_argument(
+        "--activity_type",
+        default="all",
+        help="type of activity to export. Possible values are running, \
+              cycling, swimming, multi_sport, fitness_equipment, hiking, \
+              walking, winter_sports, other or all")
     parser.add_argument(
         "--limit",
         default=10000,
@@ -31,7 +37,7 @@ def parse_arguments():
 
 def main(args):
     garmin_api.login = garmin_api.Login(args.email, args.password)
-    activities_data = garmin_api.activites(args.limit)
+    activities_data = garmin_api.activites(args.activity_type, args.limit)
 
     cal = vobject.iCalendar()
     for activity_data in activities_data:

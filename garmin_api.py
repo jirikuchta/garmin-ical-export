@@ -76,9 +76,13 @@ def with_login(func):
 
 
 @with_login
-def activites(limit: int = 10000, login_session=None) -> List[ActivityData]:
+def activites(activity_type: str,
+              limit: int = 10000,
+              login_session=None) -> List[ActivityData]:
     path = "/proxy/activitylist-service/activities/search/activities"
-    res = login_session.get(f"{WEB_BASE_URI}{path}?limit={limit}")
+    res = login_session.get((
+        f"{WEB_BASE_URI}{path}"
+        f"?limit={limit}&activityType={activity_type}"))
     res.raise_for_status()
     return res.json()
 
