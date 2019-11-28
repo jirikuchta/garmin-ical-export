@@ -13,7 +13,7 @@ WEB_BASE_URI = "https://connect.garmin.com/modern"
 LOGIN_URI = f"https://sso.garmin.com/sso/signin?service={q(WEB_BASE_URI)}"
 
 Login = namedtuple("Login", ["username", "password"])
-login = None
+login: Optional[Login] = None
 
 ROOT_ACTIVITY_TYPE_ID = 17
 
@@ -76,13 +76,13 @@ def with_login(func):
 
 
 @with_login
-def activites(activity_type: str,
-              limit: int = 10000,
+def activites(limit: int, activity_type: str = None,
               login_session=None) -> List[ActivityData]:
     path = "/proxy/activitylist-service/activities/search/activities"
-    res = login_session.get((
-        f"{WEB_BASE_URI}{path}"
-        f"?limit={limit}&activityType={activity_type}"))
+    uri = f"{WEB_BASE_URI}{path}?limit={limit}"
+    if activity_type is not None:
+        uri += f"&activityType={activity_type}"
+    res = login_session.get(uri)
     res.raise_for_status()
     return res.json()
 

@@ -4,8 +4,8 @@ import vobject
 from datetime import datetime, timedelta, tzinfo
 from typing import Optional
 
-import format_utils
-import garmin_api
+from . import format_utils
+from . import garmin_api
 
 
 class Activity:
