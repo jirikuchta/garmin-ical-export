@@ -15,6 +15,20 @@ LOGIN_URI = f"https://sso.garmin.com/sso/signin?service={q(WEB_BASE_URI)}"
 Login = namedtuple("Login", ["username", "password"])
 login = None
 
+ROOT_ACTIVITY_TYPE_ID = 17
+
+
+class BaseActivities(enum.Enum):
+    RUNNING = "running"
+    CYCLING = "cycling"
+    SWIMMING = "swimming"
+    MULTISPORT = "multi_sport"
+    FITNESS = "fitness_equipment"
+    HIKING = "hiking"
+    WALKING = "walking"
+    WINTERSPORTS = "winter_sports"
+    OTHER = "other"
+
 
 class ActivityTypeData(TypedDict):
     typeId: int
