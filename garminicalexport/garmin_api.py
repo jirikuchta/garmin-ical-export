@@ -1,113 +1,88 @@
 #!/usr/bin/env python3
 
-import enum
-import functools
+from __future__ import annotations
+
 import requests
-from collections import namedtuple
-from mypy_extensions import TypedDict
-from typing import List, Optional
-from urllib.parse import quote as q
+import urllib.parse
+from functools import lru_cache
+from typing import List, Dict, Any  # noqa
+
+from . import types
 
 
-WEB_BASE_URI = "https://connect.garmin.com/modern"
-LOGIN_URI = f"https://sso.garmin.com/sso/signin?service={q(WEB_BASE_URI)}"
+GARMIN_WEB_BASE_URI = "https://connect.garmin.com/modern"
 
-Login = namedtuple("Login", ["username", "password"])
-login: Optional[Login] = None
-
-ROOT_ACTIVITY_TYPE_ID = 17
+LOGIN_URI = (
+    f"https://sso.garmin.com/sso/signin?"
+    f"{urllib.parse.urlencode({'service': GARMIN_WEB_BASE_URI})}")
 
 
-class BaseActivities(enum.Enum):
-    RUNNING = "running"
-    CYCLING = "cycling"
-    SWIMMING = "swimming"
-    MULTISPORT = "multi_sport"
-    FITNESS = "fitness_equipment"
-    HIKING = "hiking"
-    WALKING = "walking"
-    WINTERSPORTS = "winter_sports"
-    OTHER = "other"
+class GarminAPI:
+
+    def __init__(self, username: str, password: str):
+        self.session = self.login(username, password)
+
+    def __enter__(self) -> GarminAPI:
+        return self
+
+    def __exit__(self, exc_type, exc_value, exc_traceback):
+        self.session.close()
+
+    @staticmethod
+    def login(username: str, password: str) -> requests.Session:
+        session = requests.Session()
+        session.headers.update({"referer": LOGIN_URI})
+        session.post(LOGIN_URI, {"username": username, "password": password})
+        session.get(GARMIN_WEB_BASE_URI)
+        return session
+
+    def activites(self, limit: int,
+                  activity_type: str = None) -> List[types.ActivityData]:
+        return get_activites(self.session, limit, activity_type)
+
+    def activity_types(self) -> List[types.ActivityTypeData]:
+        return get_activity_types(self.session)
+
+    def timezones(self) -> List[types.TimezoneData]:
+        return get_timezones(self.session)
+
+    def user_settings(self) -> types.UserSettings:
+        return get_user_settings(self.session)
 
 
-class ActivityTypeData(TypedDict):
-    typeId: int
-    typeKey: str
-    parentTypeId: int
-
-
-class ActivityData(TypedDict):
-    activityId: int
-    activityName: Optional[str]
-    activityType: ActivityTypeData
-    averageSpeed: Optional[float]  # m/s
-    description: Optional[str]
-    distance: Optional[float]  # metres
-    duration: Optional[float]  # seconds
-    ownerId: int
-    startTimeLocal: str
-    timeZoneId: int
-
-
-class TimezoneData(TypedDict):
-    unitId: int
-    timeZone: str
-
-
-class MeasurementSystem(enum.Enum):
-    METRIC = "metric"
-    STATUTE_US = "statute_us"
-    STATUTE_UK = "statute_uk"
-
-
-class UserSettings(TypedDict):
-    measurementSystem: str
-
-
-def with_login(func):
-    @functools.wraps(func)
-    def wrap(*args, **kwargs):
-        with requests.Session() as session:
-            session.headers.update({"referer": LOGIN_URI})
-            session.post(LOGIN_URI, login._asdict())
-            session.get(WEB_BASE_URI)
-            return func(*args, **kwargs, login_session=session)
-    return wrap
-
-
-@with_login
-def activites(limit: int, activity_type: str = None,
-              login_session=None) -> List[ActivityData]:
+@lru_cache()
+def get_activites(session: requests.Session, limit: int,
+                  activity_type: str = None) -> List[types.ActivityData]:
     path = "/proxy/activitylist-service/activities/search/activities"
-    uri = f"{WEB_BASE_URI}{path}?limit={limit}"
+    qs = {"limit": limit}  # type: Dict[str, Any]
     if activity_type is not None:
-        uri += f"&activityType={activity_type}"
-    res = login_session.get(uri)
+        qs["activityType"] = activity_type
+    uri = f"{GARMIN_WEB_BASE_URI}{path}?{urllib.parse.urlencode(qs)}"
+    res = session.get(uri)
     res.raise_for_status()
     return res.json()
 
 
-@functools.lru_cache()
-def activity_types() -> List[ActivityTypeData]:
-    uri = f"{WEB_BASE_URI}/proxy/activity-service/activity/activityTypes"
-    res = requests.get(uri)
+@lru_cache()
+def get_activity_types(session: requests.Session) -> \
+        List[types.ActivityTypeData]:
+    path = "/proxy/activity-service/activity/activityTypes"
+    res = session.get(f"{GARMIN_WEB_BASE_URI}{path}")
     res.raise_for_status()
     return res.json()
 
 
-@functools.lru_cache()
-@with_login
-def timezones(login_session=None) -> List[TimezoneData]:
-    uri = f"{WEB_BASE_URI}/proxy/system-service/timezoneUnits"
-    res = login_session.get(uri)
+@lru_cache()
+def get_timezones(session: requests.Session) -> List[types.TimezoneData]:
+    path = "/proxy/system-service/timezoneUnits"
+    res = session.get(f"{GARMIN_WEB_BASE_URI}{path}")
     res.raise_for_status()
     return res.json()
 
 
-@functools.lru_cache()
-@with_login
-def user_settings(login_session=None) -> UserSettings:
-    uri = f"{WEB_BASE_URI}/proxy/userprofile-service/userprofile/user-settings"
-    res = login_session.get(uri)
+@lru_cache()
+def get_user_settings(session: requests.Session) -> types.UserSettings:
+    path = "/proxy/userprofile-service/userprofile/user-settings"
+    res = session.get(f"{GARMIN_WEB_BASE_URI}{path}")
     res.raise_for_status()
     return res.json()["userData"]
