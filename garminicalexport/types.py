@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
 
 import enum
+from collections import namedtuple
 from mypy_extensions import TypedDict
 from typing import Optional
+
+
+LoginData = namedtuple("LoginData", "username password")
 
 
 class ActivityType(enum.Enum):
@@ -15,6 +19,10 @@ class ActivityType(enum.Enum):
     WALKING = "walking"
     WINTERSPORTS = "winter_sports"
     OTHER = "other"
+    ALL = "all"
+
+    def __str__(self):
+        return self.value
 
 
 class ActivityTypeData(TypedDict):
@@ -43,9 +51,7 @@ class TimezoneData(TypedDict):
 
 class MeasurementSystem(enum.Enum):
     METRIC = "metric"
-    STATUTE_US = "statute_us"
-    STATUTE_UK = "statute_uk"
+    IMPERIAL = "imperial"
 
-
-class UserSettings(TypedDict):
-    measurementSystem: str
+    def __str__(self):
+        return self.value

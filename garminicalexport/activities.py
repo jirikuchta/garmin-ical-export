@@ -5,18 +5,22 @@ from datetime import datetime, timedelta, tzinfo
 from typing import Optional
 
 from . import format_utils
-from . import types
+from .types import ActivityType, ActivityData, ActivityTypeData, \
+    MeasurementSystem
 from .garmin_api import GarminAPI, GARMIN_WEB_BASE_URI
 
 
 class Activity:
 
-    def __init__(self, data: types.ActivityData, garmin_api: GarminAPI):
+    def __init__(self, data: ActivityData, garmin_api: GarminAPI,
+                 measurement_system: Optional[MeasurementSystem]):
         self._data = data
         self._garmin_api = garmin_api
+        self._measurement_system = measurement_system
+        if not self._measurement_system:
+            self._measurement_system = MeasurementSystem.METRIC
         self._tzinfo = get_tzinfo_from_garmin_id(
             self._data["timeZoneId"], garmin_api)
-        self._user_settings = garmin_api.user_settings()
 
     @property
     def name(self) -> str:
@@ -38,7 +42,7 @@ class Activity:
         if distance is None:
             return "---"
 
-        if use_metric_system(self._garmin_api):
+        if self._measurement_system is MeasurementSystem.METRIC:
             return format_utils.distance_kilometers(distance)
         else:
             return format_utils.distance_miles(distance)
@@ -50,7 +54,7 @@ class Activity:
         if speed is None:
             return "---"
 
-        if use_metric_system(self._garmin_api):
+        if self._measurement_system is MeasurementSystem.METRIC:
             return format_utils.speed_kmph(speed)
         else:
             return format_utils.speed_mph(speed)
@@ -93,7 +97,7 @@ class RunningActivity(Activity):
         if speed is None:
             return "---"
 
-        if use_metric_system(self._garmin_api):
+        if self._measurement_system is MeasurementSystem.METRIC:
             return format_utils.speed_minutes_per_kilometer(speed)
         else:
             return format_utils.speed_minutes_per_mile(speed)
@@ -145,35 +149,36 @@ class FitnessActivity(Activity):
         return f"{self.name} ({self.duration})"
 
 
-def get_activity(data: types.ActivityData, garmin_api: GarminAPI) -> Activity:
+def get_activity(data: ActivityData, garmin_api: GarminAPI,
+                 measurement_system: Optional[MeasurementSystem]) -> Activity:
     activity_type = get_activity_type(data, garmin_api)
 
-    if activity_type is types.ActivityType.RUNNING:  # noqa
-        return RunningActivity(data, garmin_api)
+    if activity_type is ActivityType.RUNNING:
+        return RunningActivity(data, garmin_api, measurement_system)
 
-    if activity_type is types.ActivityType.CYCLING:  # noqa
-        return CyclingActivity(data, garmin_api)
+    if activity_type is ActivityType.CYCLING:
+        return CyclingActivity(data, garmin_api, measurement_system)
 
-    if activity_type is types.ActivityType.SWIMMING:  # noqa
-        return SwimmingActivity(data, garmin_api)
+    if activity_type is ActivityType.SWIMMING:
+        return SwimmingActivity(data, garmin_api, measurement_system)
 
-    if activity_type is types.ActivityType.MULTISPORT:  # noqa
-        return MultisportActivity(data, garmin_api)
+    if activity_type is ActivityType.MULTISPORT:
+        return MultisportActivity(data, garmin_api, measurement_system)
 
-    if activity_type is types.ActivityType.FITNESS:  # noqa
-        return FitnessActivity(data, garmin_api)
+    if activity_type is ActivityType.FITNESS:
+        return FitnessActivity(data, garmin_api, measurement_system)
 
-    return Activity(data, garmin_api)
+    return Activity(data, garmin_api, measurement_system)
 
 
-def get_activity_type(data: types.ActivityData,
-                      garmin_api: GarminAPI) -> types.ActivityType:
+def get_activity_type(data: ActivityData,
+                      garmin_api: GarminAPI) -> ActivityType:
     all_types = garmin_api.activity_types()
     type_data = data["activityType"]
 
-    def is_known(type_data: types.ActivityTypeData):
+    def is_known(type_data: ActivityTypeData):
         try:
-            types.ActivityType(type_data["typeKey"])
+            ActivityType(type_data["typeKey"])
             return True
         except ValueError:
             return False
@@ -186,9 +191,9 @@ def get_activity_type(data: types.ActivityData,
             break
 
     if is_known(type_data):
-        return types.ActivityType(type_data["typeKey"])
+        return ActivityType(type_data["typeKey"])
 
-    return types.ActivityType.OTHER
+    return ActivityType.OTHER
 
 
 def get_tzinfo_from_garmin_id(
@@ -197,8 +202,3 @@ def get_tzinfo_from_garmin_id(
     timezones = garmin_api.timezones()
     match = next(filter(lambda tz: tz["unitId"] == id, timezones), None)
     return vobject.icalendar.getTzid(match["timeZone"]) if match else None
-
-
-def use_metric_system(garmin_api: GarminAPI) -> bool:
-    return garmin_api.user_settings()["measurementSystem"] == \
-        types.MeasurementSystem.METRIC.value
