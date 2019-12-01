@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import enum
 from collections import namedtuple
 from mypy_extensions import TypedDict

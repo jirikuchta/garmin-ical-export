@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import vobject
 from datetime import datetime, timedelta, tzinfo
 from typing import Optional

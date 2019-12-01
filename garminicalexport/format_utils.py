@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-
 def time(seconds: float) -> str:
     hours, remainder = divmod(round(seconds), 3600)
     minutes, seconds = divmod(remainder, 60)

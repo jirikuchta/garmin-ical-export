@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import requests
 import urllib.parse
 from functools import lru_cache

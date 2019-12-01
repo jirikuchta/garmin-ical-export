@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import vobject
 from typing import Optional
 

@@ -13,7 +13,7 @@ setup(
     url="https://github.com/jirikuchta/garmin-ical-export",
     packages=["garminicalexport"],
     license="MIT",
-    scripts=["bin/garmin-ical-export.py"],
+    scripts=["bin/garmin-ical-export"],
     install_requires=[
         "vobject",
         "requests"
