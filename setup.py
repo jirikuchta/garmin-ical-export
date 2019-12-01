@@ -16,9 +16,9 @@ setup(
     scripts=["bin/garmin-ical-export.py"],
     install_requires=[
         "vobject",
-        "requests",
-        "mypy_extensions"
+        "requests"
     ],
+    python_requires='>=3.6',
     include_package_data=True,
     zip_safe=False
 )

@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-from __future__ import annotations
-
 import requests
 import urllib.parse
 from functools import lru_cache
@@ -23,7 +21,7 @@ class GarminAPI:
     def __init__(self, login_data: LoginData):
         self.session = self.login(login_data)
 
-    def __enter__(self) -> GarminAPI:
+    def __enter__(self) -> "GarminAPI":
         return self
 
     def __exit__(self, exc_type, exc_value, exc_traceback):

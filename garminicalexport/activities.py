@@ -75,7 +75,8 @@ class Activity:
 
     @property
     def ical_dtstart(self) -> datetime:
-        start_time = datetime.fromisoformat(self._data["startTimeLocal"])
+        start_time = datetime.strptime(
+            self._data["startTimeLocal"], "%Y-%m-%d %H:%M:%S")
         if self._tzinfo:
             start_time = start_time.replace(tzinfo=self._tzinfo)
         return start_time
