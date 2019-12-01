@@ -6,7 +6,7 @@ from distutils.core import setup
 
 setup(
     name="garmin-ical-export",
-    version="0.0.1",
+    version="0.0.4",
     description="Export Garmin Connect activities to iCalendar file",
     author="Jiri Kuchta",
     author_email="jiri.kuchta@email.cz",
