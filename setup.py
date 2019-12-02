@@ -4,10 +4,16 @@ import setuptools  # noqa
 from distutils.core import setup
 
 
+def readme():
+    with open("README.md", encoding='utf-8') as f:
+        return f.read()
+
+
 setup(
     name="garmin-ical-export",
     version="0.0.4",
     description="Export Garmin Connect activities to iCalendar file",
+    long_description=readme(),
     author="Jiri Kuchta",
     author_email="jiri.kuchta@email.cz",
     url="https://github.com/jirikuchta/garmin-ical-export",
