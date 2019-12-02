@@ -11,7 +11,7 @@ def readme():
 
 setup(
     name="garmin-ical-export",
-    version="0.0.4",
+    version="0.0.5",
     description="Export Garmin Connect activities to iCalendar file",
     long_description=readme(),
     author="Jiri Kuchta",
