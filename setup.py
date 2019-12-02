@@ -14,6 +14,7 @@ setup(
     version="0.0.5",
     description="Export Garmin Connect activities to iCalendar file",
     long_description=readme(),
+    long_description_content_type="text/markdown",
     author="Jiri Kuchta",
     author_email="jiri.kuchta@email.cz",
     url="https://github.com/jirikuchta/garmin-ical-export",
