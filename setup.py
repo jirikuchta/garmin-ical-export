@@ -20,12 +20,11 @@ setup(
     url="https://github.com/jirikuchta/garmin-ical-export",
     packages=["garminicalexport"],
     license="MIT",
-    scripts=["bin/garmin-ical-export"],
-    install_requires=[
-        "vobject",
-        "requests"
-    ],
-    python_requires='>=3.6',
+    entry_points={
+        "console_scripts": ["gamin-ical-export=garminicalexport.main:main"]
+    },
+    install_requires=["vobject", "requests"],
+    python_requires=">=3.6",
     include_package_data=True,
     zip_safe=False
 )
