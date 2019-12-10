@@ -3,8 +3,8 @@ import urllib.parse
 from functools import lru_cache
 from typing import Optional, List, Dict, Any  # noqa
 
-from .types import LoginData, ActivityType, ActivityData, ActivityTypeData, \
-    TimezoneData
+from data_types import LoginData, ActivityType, ActivityData, \
+    ActivityTypeData, TimezoneData
 
 
 GARMIN_WEB_BASE_URI = "https://connect.garmin.com/modern"

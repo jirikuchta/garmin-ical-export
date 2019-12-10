@@ -1,10 +1,12 @@
+#!/usr/bin/env python3
+
 import argparse
 import vobject
 from typing import Optional
 
-from . import activities
-from .garmin_api import GarminAPI
-from .types import LoginData, ActivityType, MeasurementSystem
+import activities
+from garmin_api import GarminAPI
+from data_types import LoginData, ActivityType, MeasurementSystem
 
 
 def parse_arguments():
@@ -70,6 +72,7 @@ def get_ical(login_data: LoginData, limit: int,
 
 def main():
     args = parse_arguments()
+
     login_data = LoginData(args.garmin_username, args.garmin_password)
 
     ical = get_ical(login_data, args.limit,
