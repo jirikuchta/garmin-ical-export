@@ -2,9 +2,9 @@ import vobject
 from datetime import datetime, timedelta, tzinfo
 from typing import Optional
 
-import format_utils
-from garmin_api import GarminAPI, GARMIN_WEB_BASE_URI
-from data_types import ActivityType, ActivityData, ActivityTypeData, \
+from . import format_utils
+from .garmin_api import GarminAPI, GARMIN_WEB_BASE_URI
+from .data_types import ActivityType, ActivityData, ActivityTypeData, \
     MeasurementSystem
 
 
