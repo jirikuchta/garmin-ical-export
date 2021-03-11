@@ -28,7 +28,7 @@ class GarminAPI:
     @staticmethod
     def login(login_data: LoginData) -> requests.Session:
         session = requests.Session()
-        session.headers.update({"referer": LOGIN_URI})
+        session.headers.update({"referer": LOGIN_URI, "NK": "NT"})
         session.post(LOGIN_URI, login_data._asdict())
         session.get(GARMIN_WEB_BASE_URI)
         return session
