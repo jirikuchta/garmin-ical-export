@@ -31,7 +31,7 @@ class GarminAPI:
         session.headers.update({
             "referer": LOGIN_URI,
             "NK": "NT",
-            "User-Agent": "https://github.com/jirikuchta/garmin-ical-export"
+            "User-Agent": "Mozilla/5.0 (+https://github.com/jirikuchta/garmin-ical-export)"
         })
         session.post(LOGIN_URI, login_data._asdict())
         session.get(GARMIN_WEB_BASE_URI)
