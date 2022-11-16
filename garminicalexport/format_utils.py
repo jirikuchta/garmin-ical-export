@@ -25,15 +25,24 @@ def speed_mph(meters_per_second: float) -> str:
 
 
 def speed_minutes_per_100_metres(meters_per_second: float) -> str:
-    minutes, seconds = divmod(100 / meters_per_second, 60)
+    try:
+        minutes, seconds = divmod(100 / meters_per_second, 60)
+    except ZeroDivisionError:
+        minutes, seconds = (0, 0)
     return f"{int(minutes)}:{round(seconds):02} min/100m"
 
 
 def speed_minutes_per_kilometer(meters_per_second: float) -> str:
-    minutes, seconds = divmod(1000 / meters_per_second, 60)
+    try:
+        minutes, seconds = divmod(1000 / meters_per_second, 60)
+    except ZeroDivisionError:
+        minutes, seconds = (0, 0)
     return f"{int(minutes)}:{round(seconds):02} min/km"
 
 
 def speed_minutes_per_mile(meters_per_second: float) -> str:
-    minutes, seconds = divmod((1000 / 0.62137) / meters_per_second, 60)
+    try:
+        minutes, seconds = divmod((1000 / 0.62137) / meters_per_second, 60)
+    except ZeroDivisionError:
+        minutes, seconds = (0, 0)
     return f"{int(minutes)}:{round(seconds):02} min/mi"
