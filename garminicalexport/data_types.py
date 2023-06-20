@@ -37,6 +37,7 @@ class ActivityData(TypedDict):
     description: Optional[str]
     distance: Optional[float]  # metres
     duration: Optional[float]  # seconds
+    elapsedDuration: Optional[float]  # seconds
     ownerId: int
     startTimeLocal: str
     timeZoneId: int

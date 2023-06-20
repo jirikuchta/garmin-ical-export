@@ -81,9 +81,8 @@ class Activity:
 
     @property
     def ical_dtend(self) -> datetime:
-        duration = 0
-        if self._data["duration"] is not None:
-            duration = round(self._data["duration"])
+        duration = self._data.get("elapsedDuration") \
+            or self._data.get("duration") or 0
         return self.ical_dtstart + timedelta(seconds=duration)
 
 
