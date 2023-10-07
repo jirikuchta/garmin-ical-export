@@ -2,8 +2,9 @@
 
 import argparse
 
+from .garmin_api import login as login_garmin
 from . import to_ical
-from .data_types import LoginData, ActivityType, MeasurementSystem
+from .data_types import ActivityType, MeasurementSystem
 
 
 def parse_arguments():
@@ -47,9 +48,12 @@ def parse_arguments():
 def main():
     args = parse_arguments()
 
-    login_data = LoginData(args.garmin_username, args.garmin_password)
+    login_garmin(
+        args.garmin_username,
+        args.garmin_password
+    )
 
-    ical = to_ical(login_data, args.limit,
+    ical = to_ical(args.limit,
                    activity_type=args.activity_type,
                    measurement_system=args.measurement_system)
 

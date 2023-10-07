@@ -23,7 +23,7 @@ setup(
     entry_points={
         "console_scripts": ["garmin-ical-export=garminicalexport.cmd:main"]
     },
-    install_requires=["vobject", "requests", "mypy_extensions"],
+    install_requires=["vobject", "garth"],
     python_requires=">=3.6",
     include_package_data=True,
     zip_safe=False

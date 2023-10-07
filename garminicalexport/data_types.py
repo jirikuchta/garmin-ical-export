@@ -1,10 +1,5 @@
 import enum
-from collections import namedtuple
-from mypy_extensions import TypedDict
-from typing import Optional
-
-
-LoginData = namedtuple("LoginData", "username password")
+from typing import Optional, TypedDict
 
 
 class ActivityType(enum.Enum):
