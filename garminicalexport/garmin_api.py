@@ -1,4 +1,6 @@
+import os
 import garth
+import tempfile
 import urllib.parse
 from functools import lru_cache
 from typing import Optional, List, Dict, Any  # noqa
@@ -8,10 +10,19 @@ from .data_types import ActivityType, ActivityData, \
 
 
 GARMIN_WEB_BASE_URI = "https://connect.garmin.com/modern"
+STORED_SESSION_FILE = os.path.join(tempfile.gettempdir(), "garmin-ical-export-session")
 
 
 def login(username: str, password: str):
+    try:
+        garth.resume(STORED_SESSION_FILE)
+        if garth.client.username == username:
+            return
+    except:
+        pass
+
     garth.login(username, password)
+    garth.save(STORED_SESSION_FILE)
 
 
 @lru_cache()
