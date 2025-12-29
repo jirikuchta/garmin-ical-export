@@ -1,13 +1,14 @@
 # Garmin iCAL Export
-Garmin Connect only allows you to publish calendar with planned workouts for upcoming 30 days ([source](https://support.garmin.com/ms-MY/?faq=UVAoDoRAgl1d75WQc4aGEA)).
-There is no way how to export/publish your passed activities. This package provides a CLI tool that fills the gap.
+Garmin Connect currently only supports publishing a calendar of planned workouts for the next 30 days ([source](https://support.garmin.com/ms-MY/?faq=UVAoDoRAgl1d75WQc4aGEA)).
+Unfortunately, there is no native way to export or publish your past activities. This package provides a CLI tool designed to bridge that gap.
 
-The package will export your activities to [iCalendar](https://en.wikipedia.org/wiki/ICalendar) file that can be imported into any calendar client.
+The tool exports your activity history into an [iCalendar](https://en.wikipedia.org/wiki/ICalendar) (.ics) file, which can be imported into any calendar application.
 
-To keep your calendar always synced with Garmin Connect you will have to:
-1) schedule a periodical job to run the CLI tool
-2) publish iCalendar file to an URL
-3) create new calencdar in your client connected to the URL
+To keep your calendar synchronized with Garmin Connect, you will need to:
+1. Schedule a periodic job to run the CLI tool.
+2. Host the generated iCalendar file at a public or accessible URL.
+3. Subscribe to that URL from your preferred calendar client.
+
 
 
 ## Installation
