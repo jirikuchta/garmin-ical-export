@@ -4,6 +4,7 @@ import argparse
 import getpass
 import os
 import sys
+from typing import Callable, Optional, Tuple
 
 from .garmin_api import login as login_garmin
 from . import to_ical
@@ -14,7 +15,7 @@ EMAIL_ENV_VAR = "GARMIN_ICAL_EXPORT_EMAIL"
 PASSWORD_ENV_VAR = "GARMIN_ICAL_EXPORT_PASSWORD"
 
 
-def build_parser():
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Exports Garmin Connect activities to iCalendar file.")
     parser.add_argument(
@@ -60,27 +61,35 @@ def build_parser():
     return parser
 
 
-def resolve_credentials(args, parser):
+def _resolve_credential(value: Optional[str], env_var: str,
+                        prompt: Callable[[], str],
+                        parser: argparse.ArgumentParser, label: str) -> str:
+    resolved = value or os.environ.get(env_var)
+    if not resolved:
+        if not sys.stdin.isatty():
+            parser.error(
+                f"{label} is required: pass it as an argument, set "
+                f"{env_var}, or run interactively")
+        resolved = prompt()
+        if not resolved:
+            parser.error(f"{label} is required")
+    return resolved
+
+
+def resolve_credentials(args: argparse.Namespace,
+                        parser: argparse.ArgumentParser) -> Tuple[str, str]:
     """Resolve login e-mail/password from args, env vars, or an
     interactive prompt (in that order). Env vars and the prompt exist so
     credentials don't have to be passed as plain CLI arguments, where
     they'd be visible in shell history and the process list."""
 
-    username = args.garmin_username or os.environ.get(EMAIL_ENV_VAR)
-    if not username:
-        if not sys.stdin.isatty():
-            parser.error(
-                "login_email is required: pass it as an argument, set "
-                f"{EMAIL_ENV_VAR}, or run interactively")
-        username = input("Garmin Connect email: ")
-
-    password = args.garmin_password or os.environ.get(PASSWORD_ENV_VAR)
-    if not password:
-        if not sys.stdin.isatty():
-            parser.error(
-                "password is required: pass it as an argument, set "
-                f"{PASSWORD_ENV_VAR}, or run interactively")
-        password = getpass.getpass("Garmin Connect password: ")
+    username = _resolve_credential(
+        args.garmin_username, EMAIL_ENV_VAR,
+        lambda: input("Garmin Connect email: "), parser, "login_email")
+    password = _resolve_credential(
+        args.garmin_password, PASSWORD_ENV_VAR,
+        lambda: getpass.getpass("Garmin Connect password: "), parser,
+        "password")
 
     return username, password
 
