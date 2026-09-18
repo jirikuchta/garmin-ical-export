@@ -24,6 +24,7 @@ setup(
         "console_scripts": ["garmin-ical-export=garminicalexport.cmd:main"]
     },
     install_requires=["vobject", "garth"],
+    extras_require={"dev": ["pytest"]},
     python_requires=">=3.8",
     include_package_data=True,
     zip_safe=False
