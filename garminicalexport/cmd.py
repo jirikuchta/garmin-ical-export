@@ -28,15 +28,6 @@ def build_parser() -> argparse.ArgumentParser:
             f"(falls back to the {EMAIL_ENV_VAR} env var, "
             "then an interactive prompt)"))
     parser.add_argument(
-        "garmin_password",
-        nargs="?",
-        type=str,
-        metavar="password",
-        help=(
-            "your Garmin Connect login password "
-            f"(falls back to the {PASSWORD_ENV_VAR} env var, "
-            "then an interactive, hidden prompt)"))
-    parser.add_argument(
         "--activity_type",
         default="all",
         type=ActivityType,
@@ -63,13 +54,12 @@ def build_parser() -> argparse.ArgumentParser:
 
 def _resolve_credential(value: Optional[str], env_var: str,
                         prompt: Callable[[], str],
-                        parser: argparse.ArgumentParser, label: str) -> str:
+                        parser: argparse.ArgumentParser, label: str,
+                        non_interactive_hint: str) -> str:
     resolved = value or os.environ.get(env_var)
     if not resolved:
         if not sys.stdin.isatty():
-            parser.error(
-                f"{label} is required: pass it as an argument, set "
-                f"{env_var}, or run interactively")
+            parser.error(f"{label} is required: {non_interactive_hint}")
         resolved = prompt()
         if not resolved:
             parser.error(f"{label} is required")
@@ -78,18 +68,18 @@ def _resolve_credential(value: Optional[str], env_var: str,
 
 def resolve_credentials(args: argparse.Namespace,
                         parser: argparse.ArgumentParser) -> Tuple[str, str]:
-    """Resolve login e-mail/password from args, env vars, or an
-    interactive prompt (in that order). Env vars and the prompt exist so
-    credentials don't have to be passed as plain CLI arguments, where
-    they'd be visible in shell history and the process list."""
+    """Resolve the login e-mail from args/env var/prompt, and the password
+    from an env var or interactive prompt (never a CLI argument, since
+    that would put it in shell history and the process list)."""
 
     username = _resolve_credential(
         args.garmin_username, EMAIL_ENV_VAR,
-        lambda: input("Garmin Connect email: "), parser, "login_email")
+        lambda: input("Garmin Connect email: "), parser, "login_email",
+        f"pass it as an argument, set {EMAIL_ENV_VAR}, or run interactively")
     password = _resolve_credential(
-        args.garmin_password, PASSWORD_ENV_VAR,
+        None, PASSWORD_ENV_VAR,
         lambda: getpass.getpass("Garmin Connect password: "), parser,
-        "password")
+        "password", f"set {PASSWORD_ENV_VAR}, or run interactively")
 
     return username, password
 

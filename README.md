@@ -23,7 +23,7 @@ usage: garmin-ical-export [-h]
                           [--limit LIMIT]
                           [--measurement_system {metric,imperial}]
                           [--target_file TARGET_FILE]
-                          [login_email] [password]
+                          [login_email]
 
 Exports Garmin Connect activities to iCalendar file.
 
@@ -31,9 +31,6 @@ positional arguments:
   login_email           your Garmin Connect login e-mail (falls back to the
                         GARMIN_ICAL_EXPORT_EMAIL env var, then an interactive
                         prompt)
-  password              your Garmin Connect login password (falls back to
-                        the GARMIN_ICAL_EXPORT_PASSWORD env var, then an
-                        interactive, hidden prompt)
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -47,6 +44,8 @@ optional arguments:
 
 ```
 
+Your password is never accepted as a command-line argument — it's always read from the `GARMIN_ICAL_EXPORT_PASSWORD` env var or an interactive, hidden prompt. See [Security note](#security-note) below.
+
 ## Examples
 Export all activities, print the result (password prompted interactively).
 ```bash
@@ -54,7 +53,7 @@ garmin-ical-export <GARMIN_CONNECT_EMAIL>
 ```
 Export only `running` activities, save the result to `garmin_activities.ics` file inside home folder.
 ```bash
-garmin-ical-export <GARMIN_CONNECT_EMAIL> <GARMIN_CONNECT_PASSWORD> --activity_type running --target_file ~/garmin_activities.ics
+garmin-ical-export <GARMIN_CONNECT_EMAIL> --activity_type running --target_file ~/garmin_activities.ics
 ```
 Run non-interactively, e.g. from a cron job, without exposing credentials as command-line arguments.
 ```bash
@@ -62,7 +61,7 @@ GARMIN_ICAL_EXPORT_EMAIL=<GARMIN_CONNECT_EMAIL> GARMIN_ICAL_EXPORT_PASSWORD=<GAR
 ```
 
 ## Security note
-`login_email` and `password` are optional. If omitted, they're read from the `GARMIN_ICAL_EXPORT_EMAIL` / `GARMIN_ICAL_EXPORT_PASSWORD` env vars, and if those aren't set either, you'll be prompted interactively (the password prompt is hidden). Passing credentials as plain command-line arguments still works, but is discouraged since they may end up in your shell history or be visible to other users on the machine via the process list (`ps`) — prefer the env vars for scheduled/non-interactive runs.
+`login_email` is optional and may be passed as a command-line argument, but `password` never is — it's always read from the `GARMIN_ICAL_EXPORT_PASSWORD` env var, or an interactive, hidden prompt if that's not set. This avoids the password ever ending up in your shell history or being visible to other users on the machine via the process list (`ps`). `login_email` falls back the same way, via `GARMIN_ICAL_EXPORT_EMAIL`, if you'd rather not pass it as an argument either.
 
 After a successful login, the tool caches your session (not your password) in a `garmin-ical-export-session` file in your system's temp directory, so you won't be prompted for MFA on every run. Delete that file to force a fresh login.
 
